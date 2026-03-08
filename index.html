@@ -11,7 +11,6 @@
         
         #hero-screen { text-align: center; width: 100%; max-width: 500px; padding: 20px; }
         
-        /* Fixed Pulsing Animation */
         #hero-screen h1 { 
             font-size: clamp(3rem, 10vw, 6rem); 
             color: var(--red); 
@@ -19,88 +18,91 @@
             font-weight: 900; 
             animation: fullPulse 2s ease-in-out infinite; 
             margin-bottom: 40px; 
-            user-select: none;
         }
         @keyframes fullPulse { 
-            0% { transform: scale(1); text-shadow: 0 0 10px var(--red); opacity: 1; } 
-            50% { transform: scale(1.08); text-shadow: 0 0 40px var(--red); opacity: 0.9; } 
-            100% { transform: scale(1); text-shadow: 0 0 10px var(--red); opacity: 1; } 
+            0%, 100% { transform: scale(1); text-shadow: 0 0 10px var(--red); } 
+            50% { transform: scale(1.08); text-shadow: 0 0 40px var(--red); } 
         }
         
         .controls { display: flex; flex-direction: column; gap: 15px; }
-        #url-input { background: #111; border: 2px solid var(--red); padding: 15px; border-radius: 8px; color: white; font-size: 1rem; outline: none; }
-        
         .btn { background: var(--red); color: var(--black); padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.3s; text-transform: uppercase; }
-        .btn:hover { background: var(--white); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4); }
+        .btn:hover { background: var(--white); transform: translateY(-2px); }
         .btn-yellow { background: var(--yellow); margin-top: 10px; }
-        
-        .status { color: var(--yellow); font-size: 0.8rem; margin-top: 30px; letter-spacing: 1px; opacity: 0.8; }
     </style>
 </head>
 <body>
 
     <div id="hero-screen">
         <h1>SpyderSammy</h1>
-        
         <div class="controls">
-            <input type="text" id="url-input" placeholder="Enter URL (e.g. roblox.com)">
-            <button class="btn" onclick="launchBlob(document.getElementById('url-input').value)">Blob-Launch URL</button>
+            <button class="btn" onclick="launchBlob('https://www.google.com')">Open Cloaked Browser</button>
             <button class="btn" onclick="launchBlob('https://takaiwebsite.neocities.org')">Minecraft</button>
-            <button class="btn" onclick="ytBypass()">YouTube Proxy</button>
-            <button class="btn btn-yellow" onclick="spyderBlank()">Open SpyderSammy in About:Blank</button>
-        </div>
-
-        <div class="status">
-            ENHANCED BLOB CLOAKING | PANIC: ` KEY
+            <button class="btn btn-yellow" onclick="spyderBlank()">Open Dashboard in About:Blank</button>
         </div>
     </div>
 
     <script>
-        // Blob Launch: Wraps the site in a local memory file to hide the target URL from filters
-        function launchBlob(url) {
-            if (!url) return;
-            if (!url.startsWith('http')) url = 'https://' + url;
+        // Store the original HTML to reload for the 'Home' button
+        const originalURL = window.location.href;
 
-            const htmlContent = `
+        function launchBlob(url) {
+            const blobHTML = `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <title>Home - Classroom</title>
                     <style>
-                        body, html, iframe { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; border: none; background: #000; }
+                        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
+                        #taskbar { height: 40px; background: #111; display: flex; align-items: center; padding: 0 10px; gap: 10px; border-bottom: 1px solid #ff0000; }
+                        #taskbar input { flex-grow: 1; background: #000; color: #fff; border: 1px solid #ff0000; padding: 5px; border-radius: 4px; outline: none; }
+                        .nav-btn { background: #ff0000; color: #000; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+                        .home-btn { background: #ffff00; }
+                        iframe { width: 100%; height: calc(100% - 41px); border: none; background: #fff; }
                     </style>
                 </head>
                 <body>
-                    <!-- Site name hidden in memory via Blob URL -->
-                    <iframe src="${url}"></iframe>
+                    <div id="taskbar">
+                        <button class="nav-btn home-btn" onclick="window.location.href='${originalURL}'">HOME</button>
+                        <button class="nav-btn" onclick="document.getElementById('f').contentWindow.history.back()">BACK</button>
+                        <button class="nav-btn" onclick="document.getElementById('f').contentWindow.history.forward()">NEXT</button>
+                        <input type="text" id="addr" placeholder="Type URL and press Enter..." value="${url}">
+                        <button class="nav-btn" onclick="nav()">GO</button>
+                    </div>
+                    <iframe id="f" src="${url}"></iframe>
+                    <script>
+                        const f = document.getElementById('f');
+                        const addr = document.getElementById('addr');
+                        function nav() {
+                            let u = addr.value;
+                            if(!u.startsWith('http')) u = 'https://' + u;
+                            f.src = u;
+                        }
+                        addr.addEventListener('keypress', (e) => { if(e.key === 'Enter') nav(); });
+                        window.addEventListener('keydown', (e) => {
+                            if (e.key === '\`') { window.location.href = "https://classroom.google.com"; }
+                        });
+                    <\/script>
                 </body>
                 </html>
             `;
 
-            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const blob = new Blob([blobHTML], { type: 'text/html' });
             const blobURL = URL.createObjectURL(blob);
-            window.location.href = blobURL; // Redirects current page to a blob: URL
+            window.location.href = blobURL; 
         }
 
-        // About:Blank Dashboard: Opens THIS dashboard in a blank page to hide history
         function spyderBlank() {
             const win = window.open('about:blank', '_blank');
-            if (!win) return alert("Please allow popups for this action.");
-            
-            win.document.write(document.documentElement.outerHTML);
-            win.document.close();
-            win.document.title = "Home - Classroom";
-            
-            // Auto-redirect the original page to something safe
-            window.location.replace("https://classroom.google.com");
+            if (win) {
+                win.document.write(document.documentElement.outerHTML);
+                win.document.close();
+                // Redirect original page to look innocent
+                window.location.replace("https://google.com");
+            } else {
+                alert("Please allow popups to open the cloaked dashboard!");
+            }
         }
 
-        function ytBypass() {
-            let url = prompt("Paste the YouTube video link:");
-            if (url) launchBlob(url.replace("youtube.com", "yout-ube.com"));
-        }
-
-        // Panic Key: ` immediately opens real Classroom and hides the current page
         window.addEventListener('keydown', (e) => {
             if (e.key === '`') {
                 window.open("https://classroom.google.com", "_blank");
