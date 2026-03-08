@@ -7,61 +7,80 @@
     <link rel="icon" type="image/x-icon" href="https://ssl.gstatic.com">
     <style>
         :root { --red: #ff0000; --black: #000000; --dark-gray: #1a1a1a; --white: #ffffff; --yellow: #ffff00; }
-        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--black); height: 100vh; overflow: hidden; }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--black); color: var(--white); height: 100vh; overflow: hidden; }
         
-        #main-app { display: flex; height: 100vh; width: 100vw; flex-direction: row; }
-        
-        /* Main Browsing Area (Left) */
-        #content-area { flex-grow: 1; display: flex; flex-direction: column; background: #fff; }
-        #address-bar { background: #222; padding: 8px; display: flex; gap: 10px; border-bottom: 1px solid var(--red); }
-        #url-input { flex-grow: 1; background: #000; color: #fff; border: 1px solid var(--red); padding: 5px; border-radius: 4px; }
+        /* Centered Hero Title */
+        #hero-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: var(--black); z-index: 100; transition: opacity 0.5s; }
+        #hero-screen h1 { font-size: 6rem; color: var(--red); text-shadow: 0 0 30px var(--red); font-weight: 900; animation: pulse 2s infinite; cursor: pointer; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
 
-        /* Spyder Sidebar (Right - Extension Style) */
-        #spyder-sidebar { width: 300px; background: var(--black); border-left: 2px solid var(--red); display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; transition: 0.2s; }
-        #spyder-sidebar.hidden { width: 0; padding: 0; border: none; opacity: 0; pointer-events: none; }
+        /* Main App Layout */
+        #main-app { display: none; height: 100vh; width: 100vw; flex-direction: row; }
+        #main-app.split-mode { flex-direction: row-reverse; } /* Sidebar on Right */
+
+        /* Extension Sidebar (320px) */
+        #sidebar { width: 320px; background: var(--black); border-left: 2px solid var(--red); display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; transition: 0.2s; }
+        #sidebar.hidden { width: 0; padding: 0; border: none; opacity: 0; pointer-events: none; }
         
-        h2 { color: var(--red); text-align: center; font-size: 1.5rem; margin: 0 0 20px 0; text-shadow: 0 0 10px var(--red); }
-        .section-label { color: var(--yellow); font-size: 0.7rem; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; margin-top: 15px; }
-        
-        .nav-tab { background: var(--red); color: var(--black); padding: 12px; margin: 5px 0; cursor: pointer; border-radius: 4px; font-weight: bold; border: none; text-align: left; width: 100%; transition: 0.2s; }
+        #sidebar h2 { color: var(--red); text-align: center; margin: 0 0 20px 0; font-size: 1.8rem; }
+        .section-label { color: var(--yellow); font-size: 0.75rem; text-transform: uppercase; font-weight: bold; margin-bottom: 8px; margin-top: 20px; border-bottom: 1px solid #333; }
+        .nav-tab { background: var(--red); color: var(--black); padding: 14px; margin: 5px 0; cursor: pointer; border-radius: 6px; font-weight: bold; border: none; text-align: left; width: 100%; transition: 0.2s; }
         .nav-tab:hover { background: var(--white); }
+
+        /* Content & Work Area */
+        #content-area { flex-grow: 1; display: flex; flex-direction: column; background: #fff; }
+        #address-bar { background: #222; padding: 10px; display: flex; align-items: center; gap: 12px; border-bottom: 2px solid var(--red); }
+        .logo-small { height: 24px; filter: drop-shadow(0 0 5px var(--red)); }
+        #url-input { flex-grow: 1; background: #000; color: #fff; border: 1px solid var(--red); padding: 8px; border-radius: 4px; outline: none; }
         
-        iframe { width: 100%; height: 100%; border: none; }
+        iframe { width: 100%; height: 100%; border: none; background: #fff; }
     </style>
 </head>
 <body>
 
+    <!-- HERO HOME PAGE -->
+    <div id="hero-screen" onclick="enterApp()">
+        <h1>SpyderSammy</h1>
+        <p style="color: var(--yellow); font-size: 0.9rem;">Click to Launch Dashboard</p>
+    </div>
+
+    <!-- MAIN APP -->
     <div id="main-app">
-        <!-- Browsing Window -->
+        <!-- Work/Classroom Area -->
         <div id="content-area">
             <div id="address-bar">
+                <img src="https://img.icons8.com" class="logo-small" alt="SS">
                 <input type="text" id="url-input" placeholder="Enter URL (e.g. google.com)" onkeydown="if(event.key==='Enter') navigate(this.value)">
-                <button onclick="navigate(document.getElementById('url-input').value)" style="background:var(--red); color:white; border:none; padding:5px 15px; cursor:pointer; border-radius:4px;">Go</button>
+                <button onclick="navigate(document.getElementById('url-input').value)" style="background:var(--red); color:white; border:none; padding:8px 20px; cursor:pointer; font-weight:bold; border-radius:4px;">Go</button>
             </div>
             <iframe id="main-frame" src="https://www.google.com"></iframe>
         </div>
 
-        <!-- Spyder Sidebar -->
-        <div id="spyder-sidebar">
+        <!-- Extension Sidebar -->
+        <div id="sidebar">
             <h2>SpyderSammy</h2>
             
             <div class="section-label">Apps</div>
-            <button class="nav-tab" onclick="openApp('https://takaiwebsite.neocities.org')">Minecraft</button>
-            <button class="nav-tab" onclick="ytBypass()">YouTube</button>
+            <button class="nav-tab" onclick="navigate('https://takaiwebsite.neocities.org')">Minecraft</button>
+            <button class="nav-tab" onclick="ytBypass()">YouTube Proxy</button>
 
-            <div class="section-label">Chrome Tabs (Quick Access)</div>
-            <button class="nav-tab" style="background:#333; color:white;" onclick="navigate('https://classroom.google.com')">Google Classroom</button>
-            <button class="nav-tab" style="background:#333; color:white;" onclick="navigate('https://docs.google.com')">Google Docs</button>
-            <button class="nav-tab" style="background:#333; color:white;" onclick="navigate('https://clever.com')">Clever Portal</button>
+            <div class="section-label">Cloud Tabs</div>
+            <div id="cloud-tabs"></div>
+            <button class="nav-tab" style="background: var(--yellow); color: black;" onclick="addCloudTab()">+ ADD TAB (Save to Cloud)</button>
 
-            <p style="color:var(--yellow); font-size:0.6rem; margin-top:auto; text-align:center;">
-                PANIC: ` | RESTORE: Ctrl + /
-            </p>
+            <button class="nav-tab" style="margin-top: auto; background: #333; color: white;" onclick="toggleSidebarMode()">Toggle Sidebar Mode</button>
+            <p style="color:var(--yellow); font-size:0.6rem; text-align:center; margin-top:10px;">PANIC: ` | RESTORE: Ctrl + /</p>
         </div>
     </div>
 
     <script>
-        // Navigate the main browsing frame
+        // Hero Entrance
+        function enterApp() {
+            document.getElementById('hero-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+        }
+
+        // Navigation
         function navigate(url) {
             if (!url) return;
             if (!url.startsWith('http')) url = 'https://' + url;
@@ -69,33 +88,74 @@
             document.getElementById('url-input').value = url;
         }
 
-        // Open app in the main frame
-        function openApp(url) {
-            navigate(url);
-        }
-
-        // YouTube Bypass Logic
+        // YouTube Bypass
         function ytBypass() {
-            let url = prompt("Enter YouTube Video URL:");
-            if (url) {
-                let bypassed = url.replace("youtube.com", "yout-ube.com");
-                navigate(bypassed);
-            }
+            let url = prompt("Paste YouTube URL:");
+            if (url) navigate(url.replace("youtube.com", "yout-ube.com"));
         }
 
-        // Keyboard Shortcuts
+        // Sidebar Mode Toggle
+        function toggleSidebarMode() {
+            document.getElementById('main-app').classList.toggle('split-mode');
+        }
+
+        // Cloud Tab Logic (Cloudflare Prepared)
+        async function addCloudTab() {
+            const name = prompt("Tab Name:");
+            const url = prompt("Tab URL:");
+            if (!name || !url) return;
+
+            // Step 1: Save Locally for now
+            const tab = { name, url };
+            saveLocalTab(tab);
+
+            // Step 2: Push to Cloudflare (Requires your Worker URL)
+            const CF_WORKER_URL = "https://your-worker.yourname.workers.dev";
+            try {
+                await fetch(CF_WORKER_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ userId: 'default_user', tab }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch(e) { console.log("Cloudflare Worker not connected yet."); }
+            
+            renderCloudTabs();
+        }
+
+        function saveLocalTab(tab) {
+            let tabs = JSON.parse(localStorage.getItem('ss_tabs')) || [];
+            tabs.push(tab);
+            localStorage.setItem('ss_tabs', JSON.stringify(tabs));
+        }
+
+        function renderCloudTabs() {
+            const container = document.getElementById('cloud-tabs');
+            container.innerHTML = '';
+            let tabs = JSON.parse(localStorage.getItem('ss_tabs')) || [];
+            tabs.forEach(t => {
+                const btn = document.createElement('button');
+                btn.className = 'nav-tab';
+                btn.innerText = t.name;
+                btn.onclick = () => navigate(t.url);
+                container.appendChild(btn);
+            });
+        }
+
+        // Panic Keys
         window.addEventListener('keydown', (e) => {
-            // Panic Key: `
             if (e.key === '`') {
-                document.getElementById('spyder-sidebar').classList.add('hidden');
+                document.getElementById('sidebar').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('split-mode');
                 navigate("https://classroom.google.com");
             }
-            // Restore Key: Ctrl + /
             if (e.ctrlKey && e.key === '/') {
                 e.preventDefault();
-                document.getElementById('spyder-sidebar').classList.remove('hidden');
+                document.getElementById('sidebar').classList.remove('hidden');
             }
         });
+
+        // Init
+        renderCloudTabs();
     </script>
 </body>
 </html>
