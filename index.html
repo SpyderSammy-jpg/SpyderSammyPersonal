@@ -3,116 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpyderSammy</title>
-    <script src="https://unpkg.com"></script>
+    <title>Home - Classroom</title>
+    <link rel="icon" type="image/x-icon" href="https://ssl.gstatic.com">
     <style>
         :root { --red: #ff0000; --black: #000000; --dark-gray: #1a1a1a; --white: #ffffff; --yellow: #ffff00; }
         body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--black); color: var(--white); height: 100vh; overflow: hidden; }
         
-        /* Auth Screen - Black Background & Centered Title */
+        /* Auth Screen */
         #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: var(--black); }
-        #auth-screen h1 { font-size: 5.5rem; color: var(--red); text-shadow: 0 0 25px var(--red); margin: 0 0 30px 0; font-weight: 900; letter-spacing: -2px; }
-        .auth-box { background: var(--dark-gray); padding: 30px; border: 2px solid var(--red); border-radius: 15px; width: 320px; text-align: center; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); }
+        #auth-screen h1 { font-size: 5.5rem; color: var(--red); text-shadow: 0 0 25px var(--red); margin: 0 0 30px 0; font-weight: 900; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); text-shadow: 0 0 40px var(--red); } 100% { transform: scale(1); } }
+        .auth-box { background: var(--dark-gray); padding: 30px; border: 2px solid var(--red); border-radius: 15px; width: 320px; text-align: center; }
         .auth-box input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid var(--red); background: #000; color: white; box-sizing: border-box; }
         .btn-red { width: 100%; padding: 12px; font-size: 1rem; cursor: pointer; border: none; margin: 10px 0; border-radius: 5px; font-weight: bold; background: var(--red); color: var(--white); transition: 0.3s; }
-        .btn-red:hover { background: var(--white); color: var(--red); }
-        .toggle-txt { color: var(--yellow); cursor: pointer; font-size: 0.8rem; text-decoration: underline; margin-top: 10px; }
 
         /* App Layout */
-        #main-app { display: none; height: 100vh; width: 100vw; }
-        #sidebar { width: 260px; background: var(--black); border-right: 2px solid var(--red); display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; }
-        #content-area { flex-grow: 1; background: var(--white); position: relative; }
-        iframe { width: 100%; height: 100%; border: none; }
-
-        /* Sidebar Tabs */
-        .section-label { color: var(--yellow); font-size: 0.75rem; margin: 20px 0 5px 5px; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid #333; }
-        .nav-tab { background: var(--red); color: var(--black); padding: 12px; margin: 4px 0; cursor: pointer; border-radius: 4px; font-weight: bold; border: none; text-align: left; width: 100%; transition: 0.2s; }
-        .nav-tab:hover { background: var(--white); }
+        #main-app { display: none; height: 100vh; width: 100vw; flex-direction: row; }
+        #sidebar { width: 260px; background: var(--black); border-right: 2px solid var(--red); display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; transition: 0.2s; z-index: 10; order: 1; }
+        #sidebar.hidden { width: 0; padding: 0; border: none; opacity: 0; pointer-events: none; }
         
-        /* Components */
-        #whiteboard-container, #editor-container { display: none; height: 100%; width: 100%; background: #fff; flex-direction: column; }
-        .wb-controls { padding: 10px; background: var(--dark-gray); display: flex; gap: 10px; }
+        /* Sidebar Mode - Default Right Side */
+        #main-app.split-mode { flex-direction: row-reverse; }
+        #main-app.split-mode.left-side { flex-direction: row; }
+        #main-app.split-mode #sidebar { width: 320px; border-left: 2px solid var(--red); border-right: none; }
+        #main-app.split-mode.left-side #sidebar { border-right: 2px solid var(--red); border-left: none; }
+
+        #content-area { flex-grow: 1; display: flex; flex-direction: column; background: var(--black); overflow: hidden; order: 2; }
+        #main-app.split-mode #content-area { order: 1; }
+
+        /* Work Address Bar & History */
+        #work-tools { display: none; background: #222; padding: 5px; border-bottom: 1px solid var(--red); align-items: center; gap: 10px; }
+        #main-app.split-mode #work-tools { display: flex; }
+        #work-url-input { flex-grow: 1; background: #000; color: #fff; border: 1px solid var(--red); padding: 5px; border-radius: 3px; }
+        #work-history-select { background: #000; color: var(--red); border: 1px solid var(--red); border-radius: 3px; padding: 4px; max-width: 150px; }
+
+        .frame-container { display: flex; flex-grow: 1; }
+        iframe { width: 100%; height: 100%; border: none; background: white; }
+        
+        #work-frame { display: none; border-right: 1px solid var(--red); }
+        #main-app.split-mode #work-frame { display: block; width: 100%; }
+
+        .section-label { color: var(--yellow); font-size: 0.75rem; margin: 20px 0 5px 5px; text-transform: uppercase; font-weight: bold; }
+        .nav-tab { background: var(--red); color: var(--black); padding: 12px; margin: 4px 0; cursor: pointer; border-radius: 4px; font-weight: bold; border: none; text-align: left; width: 100%; }
+        
         #modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--dark-gray); padding: 25px; border: 3px solid var(--red); z-index: 1000; border-radius: 12px; }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN/SIGNUP SCREEN -->
     <div id="auth-screen">
-        <h1 id="main-title">SpyderSammy</h1>
-        
+        <h1>SpyderSammy</h1>
         <div id="login-panel" class="auth-box">
             <h2 style="color: var(--red)">Login</h2>
             <input type="text" id="l-user" placeholder="Username">
             <input type="password" id="l-pass" placeholder="Password">
             <button class="btn-red" onclick="doLogin()">LOGIN</button>
-            <p class="toggle-txt" onclick="showPanel('signup')">Need an account? Sign up</p>
+            <p style="color:var(--yellow); cursor:pointer; font-size:0.8rem;" onclick="showPanel('signup')">Sign Up</p>
         </div>
-
         <div id="signup-panel" class="auth-box" style="display: none;">
             <h2 style="color: var(--red)">Sign Up</h2>
             <input type="text" id="s-user" placeholder="Username">
             <input type="password" id="s-pass" placeholder="Password">
-            <button class="btn-red" onclick="doSignup()">CREATE ACCOUNT</button>
-            <p class="toggle-txt" onclick="showPanel('login')">Already have an account? Login</p>
+            <button class="btn-red" onclick="doSignup()">CREATE</button>
+            <p style="color:var(--yellow); cursor:pointer; font-size:0.8rem;" onclick="showPanel('login')">Login</p>
         </div>
     </div>
 
-    <!-- MAIN APP -->
     <div id="main-app">
         <div id="sidebar">
             <h2 style="color: var(--red); text-align: center; margin: 0 0 10px 0;">SpyderSammy</h2>
             <div id="sidebar-content"></div>
-            <button class="nav-tab" style="background: var(--yellow); margin-top: auto;" onclick="openModal()">+ CREATE TAB</button>
+            <button class="nav-tab" style="background: var(--yellow); margin-top: auto;" onclick="toggleSplit()">TOGGLE SIDEBAR MODE</button>
+            <button id="flip-btn" class="nav-tab" style="background: var(--white); color: black; display: none;" onclick="flipSides()">SWITCH SIDES</button>
+            <button class="nav-tab" style="background: var(--white); color: black;" onclick="openModal()">+ CREATE TAB</button>
             <button class="nav-tab" style="background: #333; color: white;" onclick="location.reload()">LOGOUT</button>
         </div>
-        
         <div id="content-area">
-            <iframe id="view-frame" src="about:blank"></iframe>
-            <div id="whiteboard-container">
-                <div class="wb-controls">
-                    <button onclick="setBrush('pen')">Pen</button>
-                    <button onclick="setBrush('eraser')">Eraser</button>
-                    <input type="color" id="wb-color" value="#ff0000" onchange="canvas.freeDrawingBrush.color = this.value">
-                    <button onclick="canvas.clear()" style="margin-left: auto;">Clear</button>
-                </div>
-                <canvas id="canvas"></canvas>
+            <div id="work-tools">
+                <span style="font-size: 12px; color: var(--yellow);">Work URL:</span>
+                <input type="text" id="work-url-input" placeholder="https://google.com" onkeydown="if(event.key==='Enter') changeWorkUrl(this.value)">
+                <button onclick="changeWorkUrl(document.getElementById('work-url-input').value)" style="background: var(--red); color: white; border: none; cursor: pointer; padding: 5px 10px; border-radius: 3px;">Go</button>
+                <select id="work-history-select" onchange="changeWorkUrl(this.value)">
+                    <option value="">History</option>
+                </select>
             </div>
-            <div id="editor-container" style="padding: 20px; box-sizing: border-box;">
-                <input type="text" id="page-name" placeholder="Page Title" style="padding: 10px; margin-bottom: 10px; border: 2px solid var(--red);">
-                <textarea id="page-html" style="flex-grow: 1; border: 1px solid #ccc; padding: 10px;" placeholder="Design your page content here..."></textarea>
-                <button class="btn-red" onclick="saveCustomPage()" style="margin-top: 10px;">SAVE PAGE</button>
+            <div class="frame-container">
+                <iframe id="work-frame" src="https://www.google.com"></iframe>
+                <iframe id="view-frame" src="https://classroom.google.com"></iframe>
             </div>
         </div>
     </div>
 
-    <!-- CREATE MODAL -->
     <div id="modal">
-        <h3 style="color: white; margin-top: 0;">New Tab</h3>
+        <h3 style="color: white;">New Tab</h3>
         <button class="nav-tab" onclick="addUrlTab()">Add URL</button>
-        <button class="nav-tab" onclick="startCustomPage()">Custom Page</button>
-        <button onclick="closeModal()" style="background:none; border:none; color:gray; cursor:pointer; width:100%; margin-top:10px;">Cancel</button>
+        <button onclick="closeModal()" style="color:gray; background:none; border:none; cursor:pointer; width:100%; margin-top:10px;">Cancel</button>
     </div>
 
     <script>
         let currentUser = null;
-        let canvas = new fabric.Canvas('canvas');
-        function showPanel(type) {
-            document.getElementById('login-panel').style.display = type === 'login' ? 'block' : 'none';
-            document.getElementById('signup-panel').style.display = type === 'signup' ? 'block' : 'none';
+        let workHistory = JSON.parse(localStorage.getItem('work_history')) || ["https://www.google.com", "https://classroom.google.com"];
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === '`') { 
+                document.getElementById('sidebar').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('split-mode');
+                handleNav("https://classroom.google.com");
+            }
+            if (e.ctrlKey && e.key === '/') {
+                e.preventDefault();
+                document.getElementById('sidebar').classList.remove('hidden');
+            }
+        });
+
+        function updateHistoryDropdown() {
+            const select = document.getElementById('work-history-select');
+            select.innerHTML = '<option value="">History</option>';
+            workHistory.forEach(url => {
+                const opt = document.createElement('option');
+                opt.value = url;
+                opt.textContent = url.substring(0, 30) + (url.length > 30 ? '...' : '');
+                select.appendChild(opt);
+            });
         }
+
+        function changeWorkUrl(url) {
+            if (!url) return;
+            if (!url.startsWith('http')) url = 'https://' + url;
+            document.getElementById('work-frame').src = url;
+            document.getElementById('work-url-input').value = url;
+            
+            if (!workHistory.includes(url)) {
+                workHistory.unshift(url);
+                if (workHistory.length > 10) workHistory.pop();
+                localStorage.setItem('work_history', JSON.stringify(workHistory));
+                updateHistoryDropdown();
+            }
+        }
+
+        function toggleSplit() {
+            const app = document.getElementById('main-app');
+            const flipBtn = document.getElementById('flip-btn');
+            app.classList.toggle('split-mode');
+            flipBtn.style.display = app.classList.contains('split-mode') ? 'block' : 'none';
+            updateHistoryDropdown();
+        }
+
+        function flipSides() { document.getElementById('main-app').classList.toggle('left-side'); }
+
+        function showPanel(type) { 
+            document.getElementById('login-panel').style.display = type === 'login' ? 'block' : 'none'; 
+            document.getElementById('signup-panel').style.display = type === 'signup' ? 'block' : 'none'; 
+        }
+
         function getUsers() { return JSON.parse(localStorage.getItem('ss_users')) || { "Sharvesh": "00010698" }; }
+        
         function doSignup() {
             const u = document.getElementById('s-user').value.trim();
             const p = document.getElementById('s-pass').value;
             const users = getUsers();
-            if(!u || !p) return alert("Fields cannot be empty");
-            if(users[u]) return alert("Username taken");
-            users[u] = p;
-            localStorage.setItem('ss_users', JSON.stringify(users));
-            alert("Signup successful!");
+            if(users[u]) return alert("Taken");
+            users[u] = p; localStorage.setItem('ss_users', JSON.stringify(users));
             showPanel('login');
         }
+
         function doLogin() {
             const u = document.getElementById('l-user').value.trim();
             const p = document.getElementById('l-pass').value;
@@ -122,77 +176,48 @@
                 document.getElementById('auth-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 renderSidebar();
-            } else { alert("Invalid credentials"); }
+            } else { alert("Denied"); }
         }
+
         function renderSidebar() {
-            const sc = document.getElementById('sidebar-content');
-            sc.innerHTML = '';
-            addLabel(sc, "Common");
-            addBtn(sc, "Google Classroom", "https://classroom.google.com");
+            const sc = document.getElementById('sidebar-content'); sc.innerHTML = '';
+            addSection(sc, "Common");
+            addBtn(sc, "Classroom", "https://classroom.google.com");
             addBtn(sc, "Clever", "https://clever.com");
-            addBtn(sc, "Google Docs", "https://docs.google.com");
-            addBtn(sc, "Whiteboard", "cmd:whiteboard");
+            addBtn(sc, "Docs", "https://docs.google.com");
             addBtn(sc, "Youtube", "cmd:youtube");
-            const myTabs = JSON.parse(localStorage.getItem('tabs_' + currentUser.name)) || [];
+            const myTabs = JSON.parse(localStorage.getItem('tabs_'+currentUser.name)) || [];
             myTabs.forEach(t => addBtn(sc, t.name, t.url));
+
             if (currentUser.pass === "222" || currentUser.pass === "00010698") {
-                addLabel(sc, "222");
-                addBtn(sc, "HR 222 Website", "https://sites.google.com");
+                addSection(sc, "222");
+                addBtn(sc, "HR 222 Site", "https://sites.google.com");
             }
             if (currentUser.pass === "00010698") {
-                addLabel(sc, "Personal");
+                addSection(sc, "Admin");
                 addBtn(sc, "Minecraft", "https://takaiwebsite.neocities.org");
-                addLabel(sc, "Testing");
-                addBtn(sc, "Proxy", "about:blank");
             }
         }
-        function addLabel(p, txt) { let l = document.createElement('div'); l.className = 'section-label'; l.innerText = txt; p.appendChild(l); }
-        function addBtn(p, txt, url) {
-            let b = document.createElement('button'); b.className = 'nav-tab'; b.innerText = txt;
-            b.onclick = () => handleNav(url); p.appendChild(b);
-        }
+
+        function addSection(p, t) { let l = document.createElement('div'); l.className='section-label'; l.innerText=t; p.appendChild(l); }
+        function addBtn(p, t, u) { let b = document.createElement('button'); b.className='nav-tab'; b.innerText=t; b.onclick=()=>handleNav(u); p.appendChild(b); }
+
         function handleNav(url) {
             const frame = document.getElementById('view-frame');
-            const wb = document.getElementById('whiteboard-container');
-            const ed = document.getElementById('editor-container');
-            frame.style.display = 'none'; wb.style.display = 'none'; ed.style.display = 'none';
-            if(url === "cmd:whiteboard") {
-                wb.style.display = 'flex';
-                canvas.setHeight(window.innerHeight); canvas.setWidth(window.innerWidth - 260);
-                canvas.isDrawingMode = true;
-            } else if(url === "cmd:youtube") {
-                let y = prompt("Enter YouTube URL:");
-                if(y) { frame.style.display = 'block'; frame.src = y.replace("youtube.com", "yout-ube.com"); }
-            } else if(url.startsWith("custom:")) {
-                ed.style.display = 'flex';
-                document.getElementById('page-html').value = url.replace("custom:", "");
-            } else { frame.style.display = 'block'; frame.src = url; }
+            if(url === "cmd:youtube") { 
+                let y = prompt("URL:"); if(y) frame.src = y.replace("youtube.com", "yout-ube.com"); 
+            } else { frame.src = url; }
         }
-        function openModal() { document.getElementById('modal').style.display = 'block'; }
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
-        function addUrlTab() {
-            const n = prompt("Tab Name:");
-            const u = prompt("URL:");
-            if(n && u) saveToStorage(n, u);
-        }
-        function startCustomPage() { closeModal(); handleNav("custom:"); }
-        function saveCustomPage() {
-            const n = document.getElementById('page-name').value;
-            const h = document.getElementById('page-html').value;
-            if(n) saveToStorage(n, "custom:" + h);
-        }
-        function saveToStorage(name, url) {
-            const key = 'tabs_' + currentUser.name;
-            let current = JSON.parse(localStorage.getItem(key)) || [];
-            current.push({ name, url });
-            localStorage.setItem(key, JSON.stringify(current));
-            renderSidebar();
-            closeModal();
-        }
-        function setBrush(mode) {
-            canvas.isDrawingMode = true;
-            canvas.freeDrawingBrush.color = mode === 'eraser' ? '#ffffff' : document.getElementById('wb-color').value;
-            canvas.freeDrawingBrush.width = mode === 'eraser' ? 20 : 5;
+
+        function openModal() { document.getElementById('modal').style.display='block'; }
+        function closeModal() { document.getElementById('modal').style.display='none'; }
+        function addUrlTab() { 
+            const n=prompt("Name:"); const u=prompt("URL:"); 
+            if(n&&u) {
+                const key = 'tabs_'+currentUser.name; let cur = JSON.parse(localStorage.getItem(key))||[];
+                cur.push({name:n, url:u}); localStorage.setItem(key, JSON.stringify(cur));
+                renderSidebar(); closeModal();
+            } 
         }
     </script>
 </body>
