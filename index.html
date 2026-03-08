@@ -9,141 +9,190 @@
         :root { --red: #ff0000; --black: #000000; --dark-gray: #1a1a1a; --white: #ffffff; --yellow: #ffff00; }
         body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--black); color: var(--white); height: 100vh; overflow: hidden; }
         
-        /* Auth Screen Styling */
-        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: radial-gradient(circle, #330000 0%, #000000 100%); text-align: center; }
-        #auth-screen h1 { font-size: 5rem; color: var(--red); text-shadow: 0 0 20px var(--red); margin-bottom: 20px; }
-        .auth-container { background: rgba(0, 0, 0, 0.8); padding: 30px; border: 2px solid var(--red); border-radius: 15px; width: 300px; }
-        .auth-container input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid var(--red); background: var(--dark-gray); color: white; box-sizing: border-box; }
-        .btn-red { width: 100%; padding: 12px; font-size: 1rem; cursor: pointer; border: none; margin: 10px 0; border-radius: 5px; font-weight: bold; transition: 0.3s; background: var(--red); color: var(--white); }
+        /* Auth Screen - Black Background & Centered Title */
+        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: var(--black); }
+        #auth-screen h1 { font-size: 5.5rem; color: var(--red); text-shadow: 0 0 25px var(--red); margin: 0 0 30px 0; font-weight: 900; letter-spacing: -2px; }
+        .auth-box { background: var(--dark-gray); padding: 30px; border: 2px solid var(--red); border-radius: 15px; width: 320px; text-align: center; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); }
+        .auth-box input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid var(--red); background: #000; color: white; box-sizing: border-box; }
+        .btn-red { width: 100%; padding: 12px; font-size: 1rem; cursor: pointer; border: none; margin: 10px 0; border-radius: 5px; font-weight: bold; background: var(--red); color: var(--white); transition: 0.3s; }
         .btn-red:hover { background: var(--white); color: var(--red); }
-        .toggle-link { color: var(--yellow); cursor: pointer; text-decoration: underline; font-size: 0.9rem; }
+        .toggle-txt { color: var(--yellow); cursor: pointer; font-size: 0.8rem; text-decoration: underline; margin-top: 10px; }
 
         /* App Layout */
-        #main-app { display: none; height: 100vh; }
-        #sidebar { width: 250px; background: var(--black); border-right: 2px solid var(--red); display: flex; flex-direction: column; padding: 10px; overflow-y: auto; }
+        #main-app { display: none; height: 100vh; width: 100vw; }
+        #sidebar { width: 260px; background: var(--black); border-right: 2px solid var(--red); display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; }
         #content-area { flex-grow: 1; background: var(--white); position: relative; }
         iframe { width: 100%; height: 100%; border: none; }
-        .section-label { color: var(--yellow); font-size: 0.8rem; margin: 15px 0 5px 5px; text-transform: uppercase; }
-        .nav-tab { background: var(--red); color: var(--black); padding: 10px; margin: 5px 0; cursor: pointer; border-radius: 4px; font-weight: bold; border: none; text-align: left; width: 100%; }
+
+        /* Sidebar Tabs */
+        .section-label { color: var(--yellow); font-size: 0.75rem; margin: 20px 0 5px 5px; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid #333; }
+        .nav-tab { background: var(--red); color: var(--black); padding: 12px; margin: 4px 0; cursor: pointer; border-radius: 4px; font-weight: bold; border: none; text-align: left; width: 100%; transition: 0.2s; }
         .nav-tab:hover { background: var(--white); }
+        
+        /* Components */
+        #whiteboard-container, #editor-container { display: none; height: 100%; width: 100%; background: #fff; flex-direction: column; }
+        .wb-controls { padding: 10px; background: var(--dark-gray); display: flex; gap: 10px; }
+        #modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--dark-gray); padding: 25px; border: 3px solid var(--red); z-index: 1000; border-radius: 12px; }
     </style>
 </head>
 <body>
 
-    <!-- AUTH SCREEN (Login/Signup) -->
+    <!-- LOGIN/SIGNUP SCREEN -->
     <div id="auth-screen">
-        <h1 id="brand-title">SpyderSammy</h1>
+        <h1 id="main-title">SpyderSammy</h1>
         
-        <!-- Login Form -->
-        <div id="login-form" class="auth-container">
+        <div id="login-panel" class="auth-box">
             <h2 style="color: var(--red)">Login</h2>
-            <input type="text" id="login-user" placeholder="Username">
-            <input type="password" id="login-pass" placeholder="Password">
-            <button class="btn-red" onclick="login()">LOGIN</button>
-            <p>New? <span class="toggle-link" onclick="toggleAuth()">Sign up here</span></p>
+            <input type="text" id="l-user" placeholder="Username">
+            <input type="password" id="l-pass" placeholder="Password">
+            <button class="btn-red" onclick="doLogin()">LOGIN</button>
+            <p class="toggle-txt" onclick="showPanel('signup')">Need an account? Sign up</p>
         </div>
 
-        <!-- Signup Form -->
-        <div id="signup-form" class="auth-container" style="display: none;">
+        <div id="signup-panel" class="auth-box" style="display: none;">
             <h2 style="color: var(--red)">Sign Up</h2>
-            <input type="text" id="signup-user" placeholder="Choose Username">
-            <input type="password" id="signup-pass" placeholder="Choose Password">
-            <button class="btn-red" onclick="signup()">SIGN UP</button>
-            <p>Have an account? <span class="toggle-link" onclick="toggleAuth()">Login here</span></p>
+            <input type="text" id="s-user" placeholder="Username">
+            <input type="password" id="s-pass" placeholder="Password">
+            <button class="btn-red" onclick="doSignup()">CREATE ACCOUNT</button>
+            <p class="toggle-txt" onclick="showPanel('login')">Already have an account? Login</p>
         </div>
     </div>
 
-    <!-- MAIN APP UI (Remains same structure) -->
+    <!-- MAIN APP -->
     <div id="main-app">
         <div id="sidebar">
-            <h2 style="color: var(--red); text-align: center;">SpyderSammy</h2>
+            <h2 style="color: var(--red); text-align: center; margin: 0 0 10px 0;">SpyderSammy</h2>
             <div id="sidebar-content"></div>
-            <button class="nav-tab" style="background: var(--yellow); margin-top: auto;" onclick="showCreatePopup()">+ CREATE TAB</button>
-            <button class="nav-tab" style="background: #444; color: #fff;" onclick="location.reload()">LOGOUT</button>
+            <button class="nav-tab" style="background: var(--yellow); margin-top: auto;" onclick="openModal()">+ CREATE TAB</button>
+            <button class="nav-tab" style="background: #333; color: white;" onclick="location.reload()">LOGOUT</button>
         </div>
+        
         <div id="content-area">
             <iframe id="view-frame" src="about:blank"></iframe>
+            <div id="whiteboard-container">
+                <div class="wb-controls">
+                    <button onclick="setBrush('pen')">Pen</button>
+                    <button onclick="setBrush('eraser')">Eraser</button>
+                    <input type="color" id="wb-color" value="#ff0000" onchange="canvas.freeDrawingBrush.color = this.value">
+                    <button onclick="canvas.clear()" style="margin-left: auto;">Clear</button>
+                </div>
+                <canvas id="canvas"></canvas>
+            </div>
+            <div id="editor-container" style="padding: 20px; box-sizing: border-box;">
+                <input type="text" id="page-name" placeholder="Page Title" style="padding: 10px; margin-bottom: 10px; border: 2px solid var(--red);">
+                <textarea id="page-html" style="flex-grow: 1; border: 1px solid #ccc; padding: 10px;" placeholder="Design your page content here..."></textarea>
+                <button class="btn-red" onclick="saveCustomPage()" style="margin-top: 10px;">SAVE PAGE</button>
+            </div>
         </div>
+    </div>
+
+    <!-- CREATE MODAL -->
+    <div id="modal">
+        <h3 style="color: white; margin-top: 0;">New Tab</h3>
+        <button class="nav-tab" onclick="addUrlTab()">Add URL</button>
+        <button class="nav-tab" onclick="startCustomPage()">Custom Page</button>
+        <button onclick="closeModal()" style="background:none; border:none; color:gray; cursor:pointer; width:100%; margin-top:10px;">Cancel</button>
     </div>
 
     <script>
         let currentUser = null;
-
-        // Persistent User Storage
-        const getUsers = () => JSON.parse(localStorage.getItem('spyderUsers')) || { "Sharvesh": "00010698" };
-        const saveUsers = (users) => localStorage.setItem('spyderUsers', JSON.stringify(users));
-
-        function toggleAuth() {
-            const isLogin = document.getElementById('login-form').style.display !== 'none';
-            document.getElementById('login-form').style.display = isLogin ? 'none' : 'block';
-            document.getElementById('signup-form').style.display = isLogin ? 'block' : 'none';
+        let canvas = new fabric.Canvas('canvas');
+        function showPanel(type) {
+            document.getElementById('login-panel').style.display = type === 'login' ? 'block' : 'none';
+            document.getElementById('signup-panel').style.display = type === 'signup' ? 'block' : 'none';
         }
-
-        function signup() {
-            const user = document.getElementById('signup-user').value.trim();
-            const pass = document.getElementById('signup-pass').value;
+        function getUsers() { return JSON.parse(localStorage.getItem('ss_users')) || { "Sharvesh": "00010698" }; }
+        function doSignup() {
+            const u = document.getElementById('s-user').value.trim();
+            const p = document.getElementById('s-pass').value;
             const users = getUsers();
-
-            if (!user || !pass) return alert("Fill all fields!");
-            if (users[user]) return alert("Username already taken!");
-
-            users[user] = pass;
-            saveUsers(users);
-            alert("Account created! You can now log in.");
-            toggleAuth();
+            if(!u || !p) return alert("Fields cannot be empty");
+            if(users[u]) return alert("Username taken");
+            users[u] = p;
+            localStorage.setItem('ss_users', JSON.stringify(users));
+            alert("Signup successful!");
+            showPanel('login');
         }
-
-        function login() {
-            const user = document.getElementById('login-user').value.trim();
-            const pass = document.getElementById('login-pass').value;
+        function doLogin() {
+            const u = document.getElementById('l-user').value.trim();
+            const p = document.getElementById('l-pass').value;
             const users = getUsers();
-
-            if (users[user] === pass) {
-                currentUser = { name: user, pass: pass };
+            if(users[u] === p) {
+                currentUser = { name: u, pass: p };
                 document.getElementById('auth-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 renderSidebar();
-            } else {
-                alert("Invalid username or password!");
-            }
+            } else { alert("Invalid credentials"); }
         }
-
         function renderSidebar() {
-            const container = document.getElementById('sidebar-content');
-            container.innerHTML = '';
-            
-            // Sections & Tabs (Logic from previous prompt)
-            addSection(container, "Common");
-            addTab(container, "Google Classroom", "https://classroom.google.com");
-            addTab(container, "Clever", "https://clever.com");
-            addTab(container, "Google Docs", "https://docs.google.com");
-            
+            const sc = document.getElementById('sidebar-content');
+            sc.innerHTML = '';
+            addLabel(sc, "Common");
+            addBtn(sc, "Google Classroom", "https://classroom.google.com");
+            addBtn(sc, "Clever", "https://clever.com");
+            addBtn(sc, "Google Docs", "https://docs.google.com");
+            addBtn(sc, "Whiteboard", "cmd:whiteboard");
+            addBtn(sc, "Youtube", "cmd:youtube");
+            const myTabs = JSON.parse(localStorage.getItem('tabs_' + currentUser.name)) || [];
+            myTabs.forEach(t => addBtn(sc, t.name, t.url));
             if (currentUser.pass === "222" || currentUser.pass === "00010698") {
-                addSection(container, "222");
-                addTab(container, "HR 222 Website", "https://sites.google.com");
+                addLabel(sc, "222");
+                addBtn(sc, "HR 222 Website", "https://sites.google.com");
             }
-
             if (currentUser.pass === "00010698") {
-                addSection(container, "Personal");
-                addTab(container, "Minecraft", "https://takaiwbsite.neocities.org");
-                addSection(container, "Testing");
-                addTab(container, "Proxy", "about:blank");
+                addLabel(sc, "Personal");
+                addBtn(sc, "Minecraft", "https://takaiwebsite.neocities.org");
+                addLabel(sc, "Testing");
+                addBtn(sc, "Proxy", "about:blank");
             }
         }
-
-        function addSection(parent, label) {
-            const div = document.createElement('div');
-            div.className = 'section-label';
-            div.innerText = label;
-            parent.appendChild(div);
+        function addLabel(p, txt) { let l = document.createElement('div'); l.className = 'section-label'; l.innerText = txt; p.appendChild(l); }
+        function addBtn(p, txt, url) {
+            let b = document.createElement('button'); b.className = 'nav-tab'; b.innerText = txt;
+            b.onclick = () => handleNav(url); p.appendChild(b);
         }
-
-        function addTab(parent, name, url) {
-            const btn = document.createElement('button');
-            btn.className = 'nav-tab';
-            btn.innerText = name;
-            btn.onclick = () => document.getElementById('view-frame').src = url;
-            parent.appendChild(btn);
+        function handleNav(url) {
+            const frame = document.getElementById('view-frame');
+            const wb = document.getElementById('whiteboard-container');
+            const ed = document.getElementById('editor-container');
+            frame.style.display = 'none'; wb.style.display = 'none'; ed.style.display = 'none';
+            if(url === "cmd:whiteboard") {
+                wb.style.display = 'flex';
+                canvas.setHeight(window.innerHeight); canvas.setWidth(window.innerWidth - 260);
+                canvas.isDrawingMode = true;
+            } else if(url === "cmd:youtube") {
+                let y = prompt("Enter YouTube URL:");
+                if(y) { frame.style.display = 'block'; frame.src = y.replace("youtube.com", "yout-ube.com"); }
+            } else if(url.startsWith("custom:")) {
+                ed.style.display = 'flex';
+                document.getElementById('page-html').value = url.replace("custom:", "");
+            } else { frame.style.display = 'block'; frame.src = url; }
+        }
+        function openModal() { document.getElementById('modal').style.display = 'block'; }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        function addUrlTab() {
+            const n = prompt("Tab Name:");
+            const u = prompt("URL:");
+            if(n && u) saveToStorage(n, u);
+        }
+        function startCustomPage() { closeModal(); handleNav("custom:"); }
+        function saveCustomPage() {
+            const n = document.getElementById('page-name').value;
+            const h = document.getElementById('page-html').value;
+            if(n) saveToStorage(n, "custom:" + h);
+        }
+        function saveToStorage(name, url) {
+            const key = 'tabs_' + currentUser.name;
+            let current = JSON.parse(localStorage.getItem(key)) || [];
+            current.push({ name, url });
+            localStorage.setItem(key, JSON.stringify(current));
+            renderSidebar();
+            closeModal();
+        }
+        function setBrush(mode) {
+            canvas.isDrawingMode = true;
+            canvas.freeDrawingBrush.color = mode === 'eraser' ? '#ffffff' : document.getElementById('wb-color').value;
+            canvas.freeDrawingBrush.width = mode === 'eraser' ? 20 : 5;
         }
     </script>
 </body>
