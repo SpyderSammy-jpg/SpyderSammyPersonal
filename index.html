@@ -1,0 +1,233 @@
+		<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpyderSammy</title>
+    <script src="https://unpkg.com"></script>
+    <style>
+        :root { --red: #ff0000; --black: #000000; --dark-gray: #1a1a1a; --white: #ffffff; --yellow: #ffff00; }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--black); color: var(--white); height: 100vh; overflow: hidden; }
+        
+        /* Login Screen */
+        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: radial-gradient(circle, #330000 0%, #000000 100%); }
+        #auth-screen h1 { font-size: 5rem; color: var(--red); text-shadow: 0 0 20px var(--red); margin-bottom: 20px; }
+        .auth-btns button { padding: 15px 40px; font-size: 1.2rem; cursor: pointer; border: none; margin: 10px; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        .btn-red { background: var(--red); color: var(--white); }
+        .btn-red:hover { background: var(--white); color: var(--red); }
+
+        /* Main Layout */
+        #main-app { display: none; height: 100vh; }
+        #sidebar { width: 250px; background: var(--black); border-right: 2px solid var(--red); display: flex; flex-direction: column; padding: 10px; overflow-y: auto; }
+        #content-area { flex-grow: 1; background: var(--white); position: relative; }
+        iframe { width: 100%; height: 100%; border: none; }
+
+        /* Sidebar Styling */
+        .section-label { color: var(--yellow); font-size: 0.8rem; margin: 15px 0 5px 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-tab { background: var(--red); color: var(--black); padding: 10px; margin: 5px 0; cursor: pointer; border-radius: 4px; font-weight: bold; border: none; text-align: left; width: 100%; }
+        .nav-tab:hover { background: var(--white); }
+        
+        /* Modal */
+        #modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--dark-gray); padding: 20px; border: 2px solid var(--red); z-index: 100; border-radius: 10px; }
+        
+        /* Whiteboard */
+        #whiteboard-container { display: none; flex-direction: column; height: 100%; background: #eee; }
+        .wb-controls { padding: 10px; background: var(--dark-gray); }
+
+        /* Custom Editor */
+        #editor-container { display: none; height: 100%; flex-direction: column; background: #fff; color: #000; padding: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="auth-screen">
+        <h1>SpyderSammy</h1>
+        <div class="auth-btns">
+            <button class="btn-red" onclick="handleAuth('login')">LOGIN</button>
+            <button class="btn-red" onclick="handleAuth('signup')">SIGNUP</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="main-app" style="display: flex;">
+        <div id="sidebar">
+            <h2 style="color: var(--red); text-align: center;">SpyderSammy</h2>
+            <div id="sidebar-content"></div>
+            <button class="nav-tab" style="background: var(--yellow); margin-top: auto;" onclick="showCreatePopup()">+ CREATE TAB</button>
+            <button class="nav-tab" style="background: #444; color: #fff;" onclick="location.reload()">LOGOUT</button>
+        </div>
+        <div id="content-area">
+            <div id="whiteboard-container">
+                <div class="wb-controls">
+                    <button onclick="setBrush('pencil')">Pencil</button>
+                    <button onclick="setBrush('eraser')">Eraser</button>
+                    <input type="color" id="colorPicker" onchange="updateColor(this.value)">
+                    <button onclick="canvas.clear()">Clear</button>
+                </div>
+                <canvas id="canvas"></canvas>
+            </div>
+            <div id="editor-container">
+                <h2>Custom Page Designer</h2>
+                <input type="text" id="custom-page-name" placeholder="Tab Name">
+                <textarea id="custom-page-html" style="flex-grow: 1; margin: 10px 0;" placeholder="Enter HTML/Content here (Like Google Sites)"></textarea>
+                <button class="btn-red" onclick="saveCustomPage()">SAVE PAGE</button>
+            </div>
+            <iframe id="view-frame" src="about:blank"></iframe>
+        </div>
+    </div>
+
+    <!-- CREATE POPUP -->
+    <div id="modal">
+        <h3 style="color: var(--white)">Add New Tab</h3>
+        <button class="nav-tab" onclick="addUrlPrompt()">Add URL</button>
+        <button class="nav-tab" onclick="openDesigner()">Custom Page</button>
+        <button onclick="closeModal()" style="background:none; border:none; color:white; cursor:pointer; margin-top:10px;">Close</button>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let canvas = new fabric.Canvas('canvas');
+
+        // Initial Admin Setup
+        if(!localStorage.getItem('users')) {
+            localStorage.setItem('users', JSON.stringify({ "Sharvesh": "00010698" }));
+        }
+
+        function handleAuth(type) {
+            const user = prompt("Username:");
+            const pass = prompt("Password:");
+            const users = JSON.parse(localStorage.getItem('users'));
+
+            if (type === 'signup') {
+                if (users[user]) return alert("User exists!");
+                users[user] = pass;
+                localStorage.setItem('users', JSON.stringify(users));
+                alert("Account created! Please login.");
+            } else {
+                if (users[user] === pass) {
+                    currentUser = { name: user, pass: pass };
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'flex';
+                    renderSidebar();
+                } else {
+                    alert("Wrong credentials!");
+                }
+            }
+        }
+
+        function renderSidebar() {
+            const container = document.getElementById('sidebar-content');
+            container.innerHTML = '';
+            
+            // Common Section
+            addSection(container, "Common");
+            addTab(container, "Google Classroom", "https://classroom.google.com");
+            addTab(container, "Clever", "https://clever.com/in/jerseycity/student/portal");
+            addTab(container, "Google Docs", "https://docs.google.com");
+            addTab(container, "Whiteboard", "whiteboard");
+            addTab(container, "Youtube", "youtube");
+
+            // User Custom Tabs
+            const customTabs = JSON.parse(localStorage.getItem(`tabs_${currentUser.name}`)) || [];
+            customTabs.forEach(tab => addTab(container, tab.name, tab.content, true));
+
+            // 222 Section
+            if (currentUser.pass === "222" || currentUser.pass === "00010698") {
+                addSection(container, "222");
+                addTab(container, "HR 222 Website", "https://sites.google.com");
+            }
+
+            // Admin/Personal Section
+            if (currentUser.pass === "00010698") {
+                addSection(container, "Personal");
+                addTab(container, "Minecraft", "https://takaiwbsite.neocities.org");
+                addSection(container, "Testing");
+                addTab(container, "Proxy", "about:blank");
+            }
+        }
+
+        function addSection(parent, label) {
+            const div = document.createElement('div');
+            div.className = 'section-label';
+            div.innerText = label;
+            parent.appendChild(div);
+        }
+
+        function addTab(parent, name, target, isCustom = false) {
+            const btn = document.createElement('button');
+            btn.className = 'nav-tab';
+            btn.innerText = name;
+            btn.onclick = () => loadContent(target);
+            parent.appendChild(btn);
+        }
+
+        function loadContent(url) {
+            const frame = document.getElementById('view-frame');
+            const wb = document.getElementById('whiteboard-container');
+            const ed = document.getElementById('editor-container');
+            
+            wb.style.display = 'none';
+            ed.style.display = 'none';
+            frame.style.display = 'block';
+
+            if (url === 'whiteboard') {
+                frame.style.display = 'none';
+                wb.style.display = 'flex';
+                canvas.setHeight(window.innerHeight - 50);
+                canvas.setWidth(window.innerWidth - 250);
+            } else if (url === 'youtube') {
+                const vid = prompt("Enter Youtube URL:");
+                if(vid) frame.src = vid.replace("youtube.com", "yout-ube.com");
+            } else if (url.startsWith('custom:')) {
+                frame.style.display = 'none';
+                ed.style.display = 'flex';
+                document.getElementById('custom-page-html').value = url.replace('custom:', '');
+            } else {
+                frame.src = url;
+            }
+        }
+
+        function showCreatePopup() { document.getElementById('modal').style.display = 'block'; }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+        function addUrlPrompt() {
+            const name = prompt("Tab Name:");
+            const url = prompt("URL:");
+            if(name && url) saveTab({ name, content: url });
+        }
+
+        function openDesigner() {
+            closeModal();
+            document.getElementById('view-frame').style.display = 'none';
+            document.getElementById('editor-container').style.display = 'flex';
+        }
+
+        function saveCustomPage() {
+            const name = document.getElementById('custom-page-name').value;
+            const html = document.getElementById('custom-page-html').value;
+            saveTab({ name, content: 'custom:' + html });
+            document.getElementById('editor-container').style.display = 'none';
+        }
+
+        function saveTab(tabObj) {
+            const key = `tabs_${currentUser.name}`;
+            const existing = JSON.parse(localStorage.getItem(key)) || [];
+            existing.push(tabObj);
+            localStorage.setItem(key, JSON.stringify(existing));
+            renderSidebar();
+            closeModal();
+        }
+
+        // Whiteboard Logic
+        function setBrush(type) {
+            canvas.isDrawingMode = true;
+            canvas.freeDrawingBrush.width = 5;
+            canvas.freeDrawingBrush.color = type === 'eraser' ? '#eee' : '#000';
+        }
+    </script>
+</body>
+</html>
+
+
+
