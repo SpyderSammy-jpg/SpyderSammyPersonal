@@ -9,18 +9,18 @@
         :root { --red: #ff0000; --black: #000000; --white: #ffffff; --yellow: #ffff00; }
         body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--black); color: var(--white); height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         
-        /* Hero Homepage */
-        #hero-screen { text-align: center; }
-        #hero-screen h1 { font-size: 6rem; color: var(--red); text-shadow: 0 0 30px var(--red); font-weight: 900; animation: pulse 2s infinite; margin: 0; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        #hero-screen { text-align: center; width: 100%; max-width: 500px; padding: 20px; }
+        #hero-screen h1 { font-size: clamp(3rem, 10vw, 6rem); color: var(--red); text-shadow: 0 0 30px var(--red); font-weight: 900; animation: pulse 2s infinite; margin-bottom: 40px; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
         
-        .controls { margin-top: 30px; display: flex; flex-direction: column; gap: 15px; width: 300px; }
-        .btn { background: var(--red); color: var(--black); padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: 0.3s; }
-        .btn:hover { background: var(--white); transform: translateY(-3px); }
-        .btn-yellow { background: var(--yellow); }
+        .controls { display: flex; flex-direction: column; gap: 15px; }
+        #url-input { background: #111; border: 2px solid var(--red); padding: 15px; border-radius: 8px; color: white; font-size: 1rem; outline: none; }
         
-        #url-box { background: #111; border: 1px solid var(--red); padding: 10px; border-radius: 5px; color: white; width: 100%; box-sizing: border-box; }
-        p { color: var(--yellow); font-size: 0.8rem; margin-top: 20px; }
+        .btn { background: var(--red); color: var(--black); padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.3s; text-transform: uppercase; }
+        .btn:hover { background: var(--white); transform: translateY(-2px); }
+        .btn-yellow { background: var(--yellow); margin-top: 10px; }
+        
+        .status { color: var(--yellow); font-size: 0.8rem; margin-top: 30px; letter-spacing: 1px; opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -29,28 +29,32 @@
         <h1>SpyderSammy</h1>
         
         <div class="controls">
-            <input type="text" id="url-box" placeholder="Enter URL to Blob-Launch...">
-            <button class="btn" onclick="launchBlob(document.getElementById('url-box').value)">Launch URL (Blob)</button>
+            <input type="text" id="url-input" placeholder="Enter URL to Blob-Launch...">
+            <button class="btn" onclick="launchBlob(document.getElementById('url-input').value)">Launch Custom URL</button>
             <button class="btn" onclick="launchBlob('https://takaiwebsite.neocities.org')">Minecraft</button>
             <button class="btn" onclick="ytBypass()">YouTube Proxy</button>
             <button class="btn btn-yellow" onclick="openAboutBlank()">Open in About:Blank</button>
         </div>
 
-        <p>PANIC: ` (Opens Real Classroom) | Blob Mode Active</p>
+        <div class="status">
+            BLOB MODE ACTIVE | PANIC: ` KEY
+        </div>
     </div>
 
     <script>
-        // Blob Technique: Wraps the site in a local memory URL to hide from iBoss
+        // Blob Technique: Creates a virtual file in browser memory to hide the destination from filters
         function launchBlob(url) {
             if (!url) return;
             if (!url.startsWith('http')) url = 'https://' + url;
 
-            const content = `
+            const html = `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <title>Home - Classroom</title>
-                    <style>body,html,iframe{margin:0;padding:0;height:100%;width:100%;overflow:hidden;border:none;}</style>
+                    <style>
+                        body,html,iframe { margin:0; padding:0; height:100%; width:100%; overflow:hidden; border:none; background: #000; }
+                    </style>
                 </head>
                 <body>
                     <iframe src="${url}"></iframe>
@@ -58,34 +62,44 @@
                 </html>
             `;
 
-            const blob = new Blob([content], { type: 'text/html' });
+            const blob = new Blob([html], { type: 'text/html' });
             const blobURL = URL.createObjectURL(blob);
             window.location.href = blobURL;
         }
 
-        // About:Blank Cloaking: Opens the site in a completely empty tab that says about:blank
+        // About:Blank Cloaking: Spawns a new tab with no URL history
         function openAboutBlank() {
-            let url = prompt("Enter URL for About:Blank Cloak:");
+            let url = prompt("Enter URL to cloak in about:blank:");
             if (!url) return;
             if (!url.startsWith('http')) url = 'https://' + url;
 
             const win = window.open('about:blank', '_blank');
-            win.document.body.innerHTML = `<iframe src="${url}" style="position:fixed; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
+            win.document.body.style.margin = '0';
+            win.document.body.style.height = '100vh';
             win.document.title = "Home - Classroom";
+            
+            const iframe = win.document.createElement('iframe');
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.src = url;
+            win.document.body.appendChild(iframe);
         }
 
-        // YouTube Proxy
+        // YouTube Bypass logic
         function ytBypass() {
-            let url = prompt("Paste YouTube URL:");
-            if (url) launchBlob(url.replace("youtube.com", "yout-ube.com"));
+            let url = prompt("Paste the YouTube video link:");
+            if (url) {
+                let bypassed = url.replace("youtube.com", "yout-ube.com");
+                launchBlob(bypassed);
+            }
         }
 
-        // Panic Key: ` opens a real Google Classroom tab immediately
+        // Panic Key: ` immediately opens real Google Classroom and redirects the current page
         window.addEventListener('keydown', (e) => {
             if (e.key === '`') {
                 window.open("https://classroom.google.com", "_blank");
-                // Immediately switch current page to something boring
-                window.location.href = "https://google.com";
+                window.location.replace("https://google.com");
             }
         });
     </script>
